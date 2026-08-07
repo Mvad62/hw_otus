@@ -6,3 +6,4 @@ result=$(go run main.go | sed 's/^ *//;s/ *$//')
 [ "${result}" = "${expected}" ] || (echo -e "invalid output: ${result}" && exit 1)
 
 echo "PASS"
+sleep 10
