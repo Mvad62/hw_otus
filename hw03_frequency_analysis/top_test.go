@@ -7,7 +7,7 @@ import (
 )
 
 // Change to true if needed.
-var taskWithAsteriskIsCompleted = false
+var taskWithAsteriskIsCompleted = true
 
 var text = `Как видите, он  спускается  по  лестнице  вслед  за  своим
 	другом   Кристофером   Робином,   головой   вниз,  пересчитывая
@@ -79,4 +79,80 @@ func TestTop10(t *testing.T) {
 			require.Equal(t, expected, Top10(text))
 		}
 	})
+}
+
+func TestTop10_EdgeCases(t *testing.T) {
+	// Таблица тестовых сценариев
+	tests := []struct {
+		name     string
+		input    string
+		expected []string
+	}{
+		{
+			name:  "only invalid words (spaces, punctuation, single hyphen)",
+			input: "   -  ,,,  ...  \n\t  '  ",
+			// Ожидаем пустой слайс, так как все символы будут отсеяны
+			expected: []string{},
+		},
+		{
+			name:  "case insensitivity and edge punctuation trimming",
+			input: "Нога! нога, 'НОГА' ...нога...",
+			// Все варианты должны схлопнуться в одно слово "нога"
+			expected: []string{"нога"},
+		},
+		{
+			name:  "hyphen rules: single hyphen ignored, multiple kept",
+			input: "- -- --- -a- a- -a",
+			// "-" игнорируется. Остальные сортируются лексикографически.
+			// Порядок в ASCII: '-' (45), 'a' (97). Поэтому "-a" < "-a-" < "a-"
+			expected: []string{"--", "---", "-a", "-a-", "a-"},
+		},
+		{
+			name:  "hyphenated words are distinct from non-hyphenated",
+			input: "какой-то какойто",
+			// Это разные слова, частота у каждого 1, сортировка лексикографическая
+			expected: []string{"какой-то", "какойто"},
+		},
+		{
+			name:  "punctuation inside word is NOT trimmed",
+			input: "dog...cat dogcat",
+			// "dog...cat" не разбивается, так как разделитель только пробел.
+			// '.' (46) идет раньше 'c' (99), поэтому "dog...cat" будет первым.
+			expected: []string{"dog...cat", "dogcat"},
+		},
+		{
+			name:  "lexicographical tie-breaking for exactly 10 words",
+			input: "j i h g f e d c b a",
+			// Все слова встречаются 1 раз. Должны быть отсортированы по алфавиту.
+			expected: []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"},
+		},
+		{
+			name:  "lexicographical tie-breaking with MORE than 10 words (the asterisk task)",
+			input: "z y x w v u t s r q p o n m l k j i h g f e d c b a",
+			// 25 слов с частотой 1. Должны вернуться первые 10 в алфавитном порядке.
+			expected: []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"},
+		},
+		{
+			name:  "mixed frequencies with tie-breaking",
+			input: "apple banana apple cherry banana date apple",
+			// apple: 3, banana: 2, cherry: 1, date: 1
+			// cherry и date имеют частоту 1, "cherry" < "date" лексикографически.
+			expected: []string{"apple", "banana", "cherry", "date"},
+		},
+		{
+			name:  "unicode and numbers handling",
+			input: "123 123! test-1 test-1",
+			// Цифры сохраняются. "123" встречается 2 раза, "test-1" 2 раза.
+			// '1' (49) < 't' (116), поэтому "123" будет первым.
+			expected: []string{"123", "test-1"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// require.Equal отлично сравнивает слайсы, включая проверку порядка элементов
+			// и корректно обрабатывает случай, когда ожидаемый слайс пуст, а результат nil или []string{}
+			require.Equal(t, tt.expected, Top10(tt.input))
+		})
+	}
 }
