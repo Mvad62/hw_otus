@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var trimRegex = regexp.MustCompile(`^[^\p{L}\p{N}-]+|[^\p{L}\p{N}-]+$`)
+var trimRegex = regexp.MustCompile(`^[^\P{P}-]+|[^\P{P}-]+$`)
 
 // Top10 возвращает до 10 самых часто встречающихся слов в строке s.
 func Top10(s string) []string {

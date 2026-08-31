@@ -146,6 +146,21 @@ func TestTop10_EdgeCases(t *testing.T) {
 			// '1' (49) < 't' (116), поэтому "123" будет первым.
 			expected: []string{"123", "test-1"},
 		},
+		{
+			name:     "emoji as part of words",
+			input:    "😊 apple 😊 banana! 😊",
+			expected: []string{"😊", "apple", "banana"},
+		},
+		{
+			name:     "emoji with surrounding punctuation trimmed",
+			input:    "😀! '😀' ...😀...",
+			expected: []string{"😀"},
+		},
+		{
+			name:     "lexicographical order with emojis",
+			input:    "😀 😁 😃",
+			expected: []string{"😀", "😁", "😃"},
+		},
 	}
 
 	for _, tt := range tests {
