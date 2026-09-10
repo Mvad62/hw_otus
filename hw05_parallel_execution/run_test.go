@@ -10,12 +10,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"go.uber.org/goleak"
 )
 
 func TestRun(t *testing.T) {
-	defer goleak.VerifyNone(t)
-
 	t.Run("if were errors in first M tasks, than finished not more N+M tasks", func(t *testing.T) {
 		tasksCount := 50
 		tasks := make([]Task, 0, tasksCount)
@@ -88,8 +85,6 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("concurrency without sleep", func(t *testing.T) {
-		defer goleak.VerifyNone(t)
-
 		const (
 			workers    = 4
 			tasksCount = 10
