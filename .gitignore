@@ -26,3 +26,4 @@ ehthumbs.db
 Thumbs.db
 .vscode/
 *.bak
+hw05_parallel_execution/race_log.txt
