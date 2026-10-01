@@ -6,12 +6,38 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var (
 	ErrUnsupportedFile       = errors.New("unsupported file")
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
 )
+
+type progressWriter struct {
+	writer      io.Writer
+	total       int64
+	written     int64
+	lastPercent int64
+}
+
+func (p *progressWriter) Write(data []byte) (int, error) {
+	n, err := p.writer.Write(data)
+	p.written += int64(n)
+	if p.total > 0 {
+		percent := p.written * 100 / p.total
+		if percent != p.lastPercent || p.written == p.total {
+			barWidth := int64(20)
+			filled := percent * barWidth / 100
+			bar := "[" + strings.Repeat("=", int(filled)) + strings.Repeat(" ", int(barWidth-filled)) + "]"
+			if _, progressErr := fmt.Fprintf(os.Stdout, "\r%s %3d%%", bar, percent); err == nil {
+				err = progressErr
+			}
+			p.lastPercent = percent
+		}
+	}
+	return n, err
+}
 
 // Copy копирует из fromPath в toPath до limit байт, начиная со смещения offset.
 //
@@ -87,12 +113,26 @@ func Copy(fromPath, toPath string, offset, limit int64) (err error) {
 		}
 	}()
 
-	// 🚀 Копируем ровно toCopy байт через io.CopyN.
-	_, err = io.CopyN(dst, src, toCopy)
+	progress := &progressWriter{
+		writer: dst,
+		total:  toCopy,
+	}
+	_, err = io.CopyN(progress, src, toCopy)
 
 	// ⚠️ По ТЗ: если источник закончился раньше, EOF считаем нормальным.
 	if err != nil && !errors.Is(err, io.EOF) {
 		return fmt.Errorf("copy failed: %w", err)
+	}
+
+	if toCopy == 0 {
+		_, err = fmt.Fprint(os.Stdout, "\r100%")
+		if err != nil {
+			return err
+		}
+	}
+
+	if _, err = fmt.Fprintln(os.Stdout); err != nil {
+		return err
 	}
 
 	return dst.Sync()
