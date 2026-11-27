@@ -28,3 +28,13 @@ Thumbs.db
 *.bak
 hw05_parallel_execution/race_log.txt
 .mimocode/plans/1792317624453-nimble-canyon.md
+HomeWork_otus.txt
+.mimocode/plans/1795588809851-misty-engine.md
+hw10_program_optimization/bench-after.txt
+hw10_program_optimization/bench-baseline.txt
+hw10_program_optimization/bench-before.txt
+hw10_program_optimization/bench-goccy.txt
+hw10_program_optimization/bench-optimized.txt
+hw10_program_optimization/benchstat-results.txt
+hw10_program_optimization/stats_bench_test.go
+hw10_program_optimization/stats_extra_test.go
