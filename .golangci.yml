@@ -16,6 +16,7 @@ linters-settings:
           - "!$test"
         allow:
           - $gostd
+          - github.com/goccy/go-json
       Test:
         files:
           - $test
